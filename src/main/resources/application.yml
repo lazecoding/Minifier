@@ -1,0 +1,16 @@
+server:
+  port: 8849
+  http:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: Minifier
+
+project:
+  server-config:
+    # 服务域名，不要 / 结尾，形如: http://wwww.minifier.cn，http://localhost:8849
+    domain: http://localhost:8849
