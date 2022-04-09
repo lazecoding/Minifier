@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Caffeine Config
  *
- * @author liux
+ * @author lazecoding
  */
 @Configuration
 public class CaffeineConfig {

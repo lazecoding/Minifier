@@ -3,7 +3,7 @@ package lazecoding.minifier.model;
 /**
  * 转换映射 Bean
  *
- * @author liux
+ * @author lazecoding
  */
 public class TransformBean {
     /**

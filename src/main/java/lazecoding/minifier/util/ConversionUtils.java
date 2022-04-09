@@ -9,6 +9,8 @@ import org.apache.commons.lang3.StringUtils;
  *    <groupId>org.apache.commons</groupId>
  *    <artifactId>commons-lang3</artifactId>
  * </dependency>
+ *
+ * @author lazecoding
  */
 public enum ConversionUtils {
 

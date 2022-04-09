@@ -8,8 +8,10 @@ import lazecoding.minifier.exception.NilParamException;
 import lazecoding.minifier.model.CacheBean;
 import lazecoding.minifier.model.TransformBean;
 import lazecoding.minifier.util.ConversionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -17,27 +19,23 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 转换
  *
- * @author liux
+ * @author lazecoding
  */
 @Component
 public class Transform {
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * Caffeine Cache
      */
     @Autowired
     Cache<String, Object> caffeineCache;
-
-    /**
-     * 本地缓存（demo）
-     */
-    private Map<String, String> kvDB = new ConcurrentHashMap<>();
 
     @Autowired
     private ServerConfig serverConfig;
@@ -58,12 +56,13 @@ public class Transform {
         String conversionCode = ConversionUtils.X.encode62(uid);
         // 3.构建短地址
         String shortUri = CharConstant.TRANSFORM_ROUTE + conversionCode;
-        // TODO 4.持久化
-        // key:conversionCode,value:fullUrl
-        kvDB.put(conversionCode, fullUrl);
-        // cachekey[transform:conversionCode],cacheValue[transformCache]
+        // 4.持久化
+        // cachekey[minifier:transform:link:conversionCode],cacheValue[transformCache]
         String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
         CacheBean<String> transformCache = new CacheBean<>(fullUrl);
+        // DB > Redis > Local
+        // TODO DB
+        redisTemplate.opsForValue().set(cacheKey, transformCache);
         caffeineCache.put(cacheKey, transformCache);
         return shortUri;
     }
@@ -110,15 +109,18 @@ public class Transform {
         }
         String fullUrl;
         String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
+        // 本地缓存
         CacheBean<String> transformCache = (CacheBean<String>) caffeineCache.getIfPresent(cacheKey);
         // 如果缓存不存在 或者 超出了 ttl
         if (transformCache == null || LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() > transformCache.ttl) {
-            fullUrl = kvDB.get(conversionCode);
-            if (StringUtils.isBlank(fullUrl)) {
+            // 分布式缓存
+            transformCache = (CacheBean<String>) redisTemplate.opsForValue().get(cacheKey);
+            if (ObjectUtils.isEmpty(transformCache)) {
+                fullUrl = "";
                 // null 缓存 5 分钟
                 transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusSeconds(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
             } else {
-                transformCache = new CacheBean<>(fullUrl);
+                fullUrl = transformCache.t;
             }
             caffeineCache.put(cacheKey, transformCache);
         } else {

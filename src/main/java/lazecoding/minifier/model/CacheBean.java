@@ -3,9 +3,10 @@ package lazecoding.minifier.model;
 /**
  * 缓存实体
  *
- * @author liux
+ * @author lazecoding
  */
 public class CacheBean<T> {
+
     /**
      * 缓存对象
      */
@@ -15,6 +16,9 @@ public class CacheBean<T> {
      * 生命周期
      */
     public long ttl;
+
+    public CacheBean() {
+    }
 
     public CacheBean(T t) {
         this.t = t;

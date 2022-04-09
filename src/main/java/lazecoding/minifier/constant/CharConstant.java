@@ -3,7 +3,7 @@ package lazecoding.minifier.constant;
 /**
  * 字符串常量
  *
- * @author liux
+ * @author lazecoding
  */
 public class CharConstant {
 
