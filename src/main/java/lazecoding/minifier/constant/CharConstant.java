@@ -16,4 +16,10 @@ public class CharConstant {
      * 时区
      */
     public static String ZONE_OFFSET = "+8";
+
+    /**
+     * URL Encode 字符集 - UTF-8
+     */
+    public static String URL_ENCODE_CHARSET = "UTF-8";
+
 }

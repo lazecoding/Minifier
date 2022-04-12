@@ -1,5 +1,6 @@
 package lazecoding.minifier.controller;
 
+import lazecoding.minifier.constant.CharConstant;
 import lazecoding.minifier.service.Transform;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.util.UriUtils;
 
 import java.net.URI;
 import java.util.Set;
@@ -54,6 +56,8 @@ public class RedirectController {
 
         // 获取真实地址
         String location = transform.getFullUrl(code);
+        // URL Encode
+        location = UriUtils.encodeFragment(location, CharConstant.URL_ENCODE_CHARSET);
         if (StringUtils.isBlank(location)) {
             // 永久重定向
             // 307/308 与 302/301 的行为并行，但不允许 HTTP 方法改变。
