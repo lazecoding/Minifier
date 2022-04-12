@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="lazecoding.minifier.mapper.UrlMapMapper">
+    <!--自定义某个javaBean的封装规则,使用标签为 resultMap
+        type：自定义规则的Java类型
+        id: 这个resultMap的唯一标识
+        -->
+    <resultMap type="lazecoding.minifier.model.UrlMapBean" id="UrlMapBean">
+        <!--指定主键列的封装规则
+            id： 使用该标签，定义主键会底层有优化；当然也可以使用result。推荐使用id
+            column：指定数据库中哪一列
+            property：指定对应的javaBean属性
+            -->
+        <id column="conversion_code" property="conversionCode"/>
+        <!-- 定义普通列封装规则 -->
+        <result column="full_url" property="fullUrl"/>
+        <!-- 其他不指定的列会自动封装：但推荐写完整。 -->
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <insert id="addUrlMap">
+        INSERT INTO url_map(conversion_code,full_url) VALUES (#{conversionCode},#{fullUrl});
+    </insert>
+
+    <select id="findUrlMap" resultMap="UrlMapBean">
+        SELECT conversion_code, full_url, create_time FROM url_map WHERE conversion_code = #{conversionCode} LIMIT 1
+    </select>
+</mapper>

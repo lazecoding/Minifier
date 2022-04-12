@@ -1,22 +1,15 @@
 package lazecoding.minifier.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import lazecoding.minifier.config.ServerConfig;
-import lazecoding.minifier.constant.CacheConstant;
 import lazecoding.minifier.constant.CharConstant;
 import lazecoding.minifier.exception.NilParamException;
-import lazecoding.minifier.model.CacheBean;
 import lazecoding.minifier.model.TransformBean;
 import lazecoding.minifier.util.ConversionUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,16 +22,10 @@ import java.util.List;
 public class Transform {
 
     @Autowired
-    private RedisTemplate redisTemplate;
-
-    /**
-     * Caffeine Cache
-     */
-    @Autowired
-    Cache<String, Object> caffeineCache;
-
-    @Autowired
     private ServerConfig serverConfig;
+
+    @Autowired
+    private Storage storage;
 
     /**
      * 地址转换
@@ -56,14 +43,8 @@ public class Transform {
         String conversionCode = ConversionUtils.X.encode62(uid);
         // 3.构建短地址
         String shortUri = CharConstant.TRANSFORM_ROUTE + conversionCode;
-        // 4.持久化
-        // cachekey[minifier:transform:link:conversionCode],cacheValue[transformCache]
-        String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
-        CacheBean<String> transformCache = new CacheBean<>(fullUrl);
-        // DB > Redis > Local
-        // TODO DB
-        redisTemplate.opsForValue().set(cacheKey, transformCache);
-        caffeineCache.put(cacheKey, transformCache);
+        // 4.存储
+        storage.storageTransformInfo(conversionCode, fullUrl);
         return shortUri;
     }
 
@@ -104,29 +85,7 @@ public class Transform {
      * @return
      */
     public String getFullUrl(String conversionCode) {
-        if (StringUtils.isBlank(conversionCode)) {
-            throw new NilParamException("Code 不得为空");
-        }
-        String fullUrl;
-        String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
-        // 本地缓存
-        CacheBean<String> transformCache = (CacheBean<String>) caffeineCache.getIfPresent(cacheKey);
-        // 如果缓存不存在 或者 超出了 ttl
-        if (transformCache == null || LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() > transformCache.ttl) {
-            // 分布式缓存
-            transformCache = (CacheBean<String>) redisTemplate.opsForValue().get(cacheKey);
-            if (ObjectUtils.isEmpty(transformCache)) {
-                fullUrl = "";
-                // null 缓存 5 分钟
-                transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusSeconds(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
-            } else {
-                fullUrl = transformCache.t;
-            }
-            caffeineCache.put(cacheKey, transformCache);
-        } else {
-            fullUrl = transformCache.t;
-        }
-        return fullUrl;
+        return storage.findTransformUrl(conversionCode);
     }
 
 }
