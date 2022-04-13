@@ -54,11 +54,11 @@ public class Storage {
     }
 
     /**
-     * 获取转换的 URL，即 fullUrl
+     * 获取 fullUrl
      *
      * @param conversionCode 短码
      */
-    public String findTransformUrl(String conversionCode) {
+    public String getFullUrl(String conversionCode) {
         if (StringUtils.isBlank(conversionCode)) {
             throw new NilParamException("Code 不得为空");
         }

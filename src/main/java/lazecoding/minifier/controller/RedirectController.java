@@ -59,12 +59,11 @@ public class RedirectController {
         // URL Encode
         location = UriUtils.encodeFragment(location, CharConstant.URL_ENCODE_CHARSET);
         if (StringUtils.isBlank(location)) {
-            // 永久重定向
-            // 307/308 与 302/301 的行为并行，但不允许 HTTP 方法改变。
+            // 404
             response.setStatusCode(HttpStatus.NOT_FOUND);
             return;
         }
-        // 永久重定向
+        // 重定向
         // 307/308 与 302/301 的行为并行，但不允许 HTTP 方法改变。 307:TEMPORARY_REDIRECT ; 308:PERMANENT_REDIRECT
         response.setStatusCode(HttpStatus.TEMPORARY_REDIRECT);
 

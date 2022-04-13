@@ -49,7 +49,7 @@ public class Transform {
     }
 
     /**
-     * 批量获取短地址
+     * 批量获取(转换)短地址
      **/
     public List<TransformBean> batchTransformedUrl(List<String> list) {
         if (CollectionUtils.isEmpty(list)) {
@@ -64,7 +64,7 @@ public class Transform {
     }
 
     /**
-     * 获取短地址
+     * 获取(转换)短地址
      *
      * @param fullUrl 原地址
      * @return shortUrl 短地址
@@ -85,7 +85,7 @@ public class Transform {
      * @return
      */
     public String getFullUrl(String conversionCode) {
-        return storage.findTransformUrl(conversionCode);
+        return storage.getFullUrl(conversionCode);
     }
 
 }
