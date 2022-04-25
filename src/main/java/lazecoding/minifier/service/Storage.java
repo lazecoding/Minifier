@@ -76,7 +76,7 @@ public class Storage {
                 UrlMapBean urlMap = urlMapMapper.findUrlMap(conversionCode);
                 if (urlMap == null) {
                     // null 缓存 5 分钟
-                    transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusSeconds(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
+                    transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusMinutes(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
                 } else {
                     fullUrl = urlMap.getFullUrl();
                     transformCache = new CacheBean<>(fullUrl);
