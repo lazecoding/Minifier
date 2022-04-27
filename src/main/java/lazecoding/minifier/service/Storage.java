@@ -40,13 +40,13 @@ public class Storage {
      * @param conversionCode 短码
      * @param fullUrl        全地址
      */
-    public void storageTransformInfo(String conversionCode, String fullUrl) {
+    public void storageTransformInfo(String conversionCode, String fullUrl, long ttl) {
         // cachekey[minifier:transform:link:conversionCode],cacheValue[transformCache]
         String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
-        CacheBean<String> transformCache = new CacheBean<>(fullUrl);
+        CacheBean<String> transformCache = new CacheBean<>(fullUrl, ttl);
         // DB > Redis > Local
         // 1.DB
-        urlMapMapper.addUrlMap(conversionCode, fullUrl);
+        urlMapMapper.addUrlMap(conversionCode, fullUrl, ttl);
         // 2.Redis
         redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
         // 3.Local
@@ -74,12 +74,11 @@ public class Storage {
                 fullUrl = "";
                 //  Find From DB
                 UrlMapBean urlMap = urlMapMapper.findUrlMap(conversionCode);
-                if (urlMap == null) {
+                if (urlMap == null || LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() > urlMap.getTtl()) {
                     // null 缓存 5 分钟
                     transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusMinutes(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
                 } else {
-                    fullUrl = urlMap.getFullUrl();
-                    transformCache = new CacheBean<>(fullUrl);
+                    transformCache = new CacheBean<>(urlMap.getFullUrl(), urlMap.getTtl());
                     // Redis
                     redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
                 }

@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public class Transform {
      * @param fullUrl 原地址
      * @return shortUri 转换后的 uri
      */
-    private String transformUrl(String fullUrl) {
+    private String transformUrl(String fullUrl, Long timeout) {
         if (StringUtils.isBlank(fullUrl)) {
             throw new NilParamException("原地址不得为空");
         }
@@ -43,21 +45,28 @@ public class Transform {
         String conversionCode = ConversionUtils.X.encode62(uid);
         // 3.构建短地址
         String shortUri = CharConstant.TRANSFORM_ROUTE + conversionCode;
-        // 4.存储
-        storage.storageTransformInfo(conversionCode, fullUrl);
+        // 4.存活时间
+        long ttl;
+        if (timeout < 0) {
+            ttl = Long.MAX_VALUE;
+        } else {
+            ttl = LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() + timeout;
+        }
+        // 5.存储
+        storage.storageTransformInfo(conversionCode, fullUrl, ttl);
         return shortUri;
     }
 
     /**
      * 批量获取(转换)短地址
      **/
-    public List<TransformBean> batchTransformedUrl(List<String> list) {
+    public List<TransformBean> batchTransformedUrl(List<String> list, Long timeout) {
         if (CollectionUtils.isEmpty(list)) {
             throw new NilParamException("Batch List 不得为空");
         }
         List<TransformBean> transformBeanList = new ArrayList<>();
         for (String fullUrl : list) {
-            TransformBean transformBean = this.getTransformedUrl(fullUrl);
+            TransformBean transformBean = this.getTransformedUrl(fullUrl, timeout);
             transformBeanList.add(transformBean);
         }
         return transformBeanList;
@@ -69,12 +78,12 @@ public class Transform {
      * @param fullUrl 原地址
      * @return shortUrl 短地址
      */
-    public TransformBean getTransformedUrl(String fullUrl) {
+    public TransformBean getTransformedUrl(String fullUrl, Long timeout) {
         String domain = serverConfig.getDomain();
         if (StringUtils.isBlank(domain)) {
             throw new NilParamException("Domain 不得为空");
         }
-        String shortUrl = domain + transformUrl(fullUrl);
+        String shortUrl = domain + transformUrl(fullUrl, timeout);
         return new TransformBean(fullUrl, shortUrl);
     }
 

@@ -15,15 +15,16 @@
         <id column="conversion_code" property="conversionCode"/>
         <!-- 定义普通列封装规则 -->
         <result column="full_url" property="fullUrl"/>
+        <result column="ttl" property="ttl"/>
         <!-- 其他不指定的列会自动封装：但推荐写完整。 -->
         <result column="create_time" property="createTime"/>
     </resultMap>
 
     <insert id="addUrlMap">
-        INSERT INTO url_map(conversion_code,full_url) VALUES (#{conversionCode},#{fullUrl});
+        INSERT INTO url_map(conversion_code,full_url,ttl) VALUES (#{conversionCode},#{fullUrl},#{ttl});
     </insert>
 
     <select id="findUrlMap" resultMap="UrlMapBean">
-        SELECT conversion_code, full_url, create_time FROM url_map WHERE conversion_code = #{conversionCode} LIMIT 1
+        SELECT conversion_code, full_url, ttl,create_time FROM url_map WHERE conversion_code = #{conversionCode} LIMIT 1
     </select>
 </mapper>

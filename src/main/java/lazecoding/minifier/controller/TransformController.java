@@ -1,5 +1,6 @@
 package lazecoding.minifier.controller;
 
+import lazecoding.minifier.constant.DigitConstant;
 import lazecoding.minifier.model.TransformBean;
 import lazecoding.minifier.service.Transform;
 import org.apache.commons.lang3.StringUtils;
@@ -34,8 +35,12 @@ public class TransformController {
      */
     @PostMapping(path = "get")
     @ResponseBody
-    public Mono<TransformBean> transform(String path) {
-        TransformBean transformBean = transform.getTransformedUrl(path);
+    public Mono<TransformBean> transform(String path, Long timeout) {
+        if (timeout == null) {
+            // 如果 timeout == null，默认超时时长 1 个月
+            timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
+        }
+        TransformBean transformBean = transform.getTransformedUrl(path, timeout);
         return Mono.just(transformBean);
     }
 
@@ -44,9 +49,13 @@ public class TransformController {
      */
     @PostMapping(path = "batch")
     @ResponseBody
-    public Flux<TransformBean> batch(@RequestBody List<String> list) {
+    public Flux<TransformBean> batch(@RequestBody List<String> list, Long timeout) {
+        if (timeout == null) {
+            // 如果 timeout == null，默认超时时长 1 个月
+            timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
+        }
         list = list.stream().filter(StringUtils::isNotBlank).collect(toList());
-        List<TransformBean> transformBeanList = transform.batchTransformedUrl(list);
+        List<TransformBean> transformBeanList = transform.batchTransformedUrl(list, timeout);
         return Flux.fromIterable(transformBeanList);
     }
 
@@ -55,10 +64,15 @@ public class TransformController {
      */
     @PostMapping(path = "batch-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseBody
-    public Flux<TransformBean> batchPush(@RequestBody List<String> list) {
+    public Flux<TransformBean> batchPush(@RequestBody List<String> list, Long timeout) {
+        if (timeout == null) {
+            // 如果 timeout == null，默认超时时长 1 个月
+            timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
+        }
+        Long finalTimeout = timeout;
         return Flux.fromStream(list.stream()
                 .filter(StringUtils::isNotBlank)
-                .map((fullUrl) -> transform.getTransformedUrl(fullUrl)));
+                .map((fullUrl) -> transform.getTransformedUrl(fullUrl, finalTimeout)));
     }
 
 }

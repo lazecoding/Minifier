@@ -20,6 +20,11 @@ public class UrlMapBean {
     private String fullUrl;
 
     /**
+     * 存活时间
+     */
+    private long ttl;
+
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -38,6 +43,14 @@ public class UrlMapBean {
 
     public void setFullUrl(String fullUrl) {
         this.fullUrl = fullUrl;
+    }
+
+    public long getTtl() {
+        return ttl;
+    }
+
+    public void setTtl(long ttl) {
+        this.ttl = ttl;
     }
 
     public Date getCreateTime() {

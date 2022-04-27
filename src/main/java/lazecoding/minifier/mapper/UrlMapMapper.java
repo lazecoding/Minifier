@@ -18,7 +18,7 @@ public interface UrlMapMapper {
      * @param conversionCode 短码
      * @param fullUrl        全地址
      */
-    void addUrlMap(@Param("conversionCode") String conversionCode, @Param("fullUrl") String fullUrl);
+    void addUrlMap(@Param("conversionCode") String conversionCode, @Param("fullUrl") String fullUrl,@Param("ttl") long ttl);
 
     /**
      * 获取 短码-全地址 映射
