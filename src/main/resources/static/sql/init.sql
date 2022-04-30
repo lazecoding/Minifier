@@ -5,6 +5,5 @@ CREATE TABLE `url_map` (
    `full_url` varchar(765) NOT NULL,
    `ttl` bigint(20) NOT NULL,
    `create_time` timestamp NOT NULL DEFAULT NOW(),
-   PRIMARY KEY (`conversion_code`),
-   INDEX idx_full_url (`full_url`)
+   PRIMARY KEY (`conversion_code`)
 ) ENGINE = InnoDB;
