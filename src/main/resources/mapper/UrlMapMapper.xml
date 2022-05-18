@@ -21,10 +21,10 @@
     </resultMap>
 
     <insert id="addUrlMap">
-        INSERT INTO url_map(conversion_code,full_url,ttl) VALUES (#{conversionCode},#{fullUrl},#{ttl});
+        INSERT INTO ${tableName} (conversion_code,full_url,ttl) VALUES (#{conversionCode},#{fullUrl},#{ttl});
     </insert>
 
     <select id="findUrlMap" resultMap="UrlMapBean">
-        SELECT conversion_code, full_url, ttl,create_time FROM url_map WHERE conversion_code = #{conversionCode} LIMIT 1
+        SELECT conversion_code, full_url, ttl,create_time FROM ${tableName} WHERE conversion_code = #{conversionCode} LIMIT 1
     </select>
 </mapper>

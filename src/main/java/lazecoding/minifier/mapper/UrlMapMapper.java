@@ -17,15 +17,17 @@ public interface UrlMapMapper {
      *
      * @param conversionCode 短码
      * @param fullUrl        全地址
+     * @param tableName      表名
      */
-    void addUrlMap(@Param("conversionCode") String conversionCode, @Param("fullUrl") String fullUrl,@Param("ttl") long ttl);
+    void addUrlMap(@Param("conversionCode") String conversionCode, @Param("fullUrl") String fullUrl, @Param("ttl") long ttl, @Param("tableName") String tableName);
 
     /**
      * 获取 短码-全地址 映射
      *
      * @param conversionCode 短码
+     * @param tableName      表名
      * @return UrlMapBean
      */
-    UrlMapBean findUrlMap(@Param("conversionCode") String conversionCode);
+    UrlMapBean findUrlMap(@Param("conversionCode") String conversionCode, @Param("tableName") String tableName);
 
 }
