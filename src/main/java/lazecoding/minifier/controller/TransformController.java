@@ -1,12 +1,15 @@
 package lazecoding.minifier.controller;
 
 import lazecoding.minifier.constant.DigitConstant;
+import lazecoding.minifier.exception.NilParamException;
+import lazecoding.minifier.model.BatchRequest;
 import lazecoding.minifier.model.TransformBean;
 import lazecoding.minifier.service.Transform;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,7 +52,12 @@ public class TransformController {
      */
     @PostMapping(path = "batch")
     @ResponseBody
-    public Flux<TransformBean> batch(@RequestBody List<String> list, Long timeout) {
+    public Flux<TransformBean> batch(@RequestBody BatchRequest batchRequest) {
+        if (ObjectUtils.isEmpty(batchRequest)){
+            throw new NilParamException("BatchRequest Is Nil.");
+        }
+        Long timeout = batchRequest.getTimeout();
+        List<String> list = batchRequest.getList();
         if (timeout == null) {
             // 如果 timeout == null，默认超时时长 1 个月
             timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
@@ -64,7 +72,12 @@ public class TransformController {
      */
     @PostMapping(path = "batch-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseBody
-    public Flux<TransformBean> batchPush(@RequestBody List<String> list, Long timeout) {
+    public Flux<TransformBean> batchPush(@RequestBody BatchRequest batchRequest) {
+        if (ObjectUtils.isEmpty(batchRequest)){
+            throw new NilParamException("BatchRequest Is Nil.");
+        }
+        Long timeout = batchRequest.getTimeout();
+        List<String> list = batchRequest.getList();
         if (timeout == null) {
             // 如果 timeout == null，默认超时时长 1 个月
             timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
