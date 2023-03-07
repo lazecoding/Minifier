@@ -3,6 +3,7 @@ package lazecoding.minifier.service;
 import com.github.benmanes.caffeine.cache.Cache;
 import lazecoding.minifier.constant.CacheConstant;
 import lazecoding.minifier.constant.CharConstant;
+import lazecoding.minifier.constant.TableConstant;
 import lazecoding.minifier.exception.NilParamException;
 import lazecoding.minifier.mapper.UrlMapMapper;
 import lazecoding.minifier.model.CacheBean;
@@ -34,23 +35,6 @@ public class Storage {
     @Autowired
     private UrlMapMapper urlMapMapper;
 
-    private static final String TABLE_HEAD = "url_map";
-
-    /**
-     * 根据 conversionCode 最后一位字符获取表名
-     *
-     * @param conversionCode 短码
-     * @return tableName 表名
-     */
-    private String getTableName(String conversionCode) {
-        if (StringUtils.isBlank(conversionCode)) {
-            throw new NilParamException("conversionCode 不得为空");
-        }
-        String tableEnd = conversionCode.substring(conversionCode.length() - 1).toLowerCase();
-        String tableName = TABLE_HEAD + "_" + tableEnd;
-        return tableName;
-    }
-
     /**
      * 存储转换信息
      *
@@ -63,7 +47,7 @@ public class Storage {
         CacheBean<String> transformCache = new CacheBean<>(fullUrl, ttl);
         // DB > Redis > Local
         // 1.DB
-        String tableName = this.getTableName(conversionCode);
+        String tableName = TableConstant.getUrlMapTable(conversionCode);
         urlMapMapper.addUrlMap(conversionCode, fullUrl, ttl, tableName);
         // 2.Redis
         redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
@@ -91,7 +75,7 @@ public class Storage {
             if (ObjectUtils.isEmpty(transformCache)) {
                 fullUrl = "";
                 //  Find From DB
-                String tableName = this.getTableName(conversionCode);
+                String tableName = TableConstant.getUrlMapTable(conversionCode);
                 UrlMapBean urlMap = urlMapMapper.findUrlMap(conversionCode, tableName);
                 if (urlMap == null || LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() > urlMap.getTtl()) {
                     // null 缓存 5 分钟
