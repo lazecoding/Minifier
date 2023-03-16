@@ -1,3 +1,19 @@
+-- record
+DROP TABLE IF EXISTS `segment_record`;
+
+CREATE TABLE `segment_record`
+(
+    `uid`         int(11) AUTO_INCREMENT,
+    `bus_tag`     varchar(64) NOT NULL,
+    `max_id`      bigint(20) NOT NULL,
+    `step`        int(11) NOT NULL,
+    `description` varchar(256),
+    `update_time` timestamp   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`uid`),
+    UNIQUE INDEX idx_tag (`bus_tag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- url_map_*
 DROP TABLE IF EXISTS `url_map_0`;
 
 CREATE TABLE `url_map_0`
