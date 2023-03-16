@@ -92,12 +92,11 @@ public class BufferHolder {
     private static void applySegmentFromDb(String tag, Segment segment) {
         SegmentBuffer buffer = segment.getBuffer();
         Record record;
+        SegmentManager segmentManager = SegmentManager.getInstance();
         if (!buffer.isInitSuccess()) {
             //未初始化
             // apply record
-            // TODO
-            record = new Record();
-            // record = updateMaxIdAndGetUniqueRecord(tag);
+            record = segmentManager.updateMaxIdAndGetRecord(tag);
             buffer.setUpdateTimestamp(System.currentTimeMillis());
             buffer.setStep(record.getStep());
             buffer.setMinStep(record.getStep());
@@ -119,9 +118,7 @@ public class BufferHolder {
             }
             logger.debug("transform for tag[{}],step[{}],duration[{}mins],nextStep[{}]", tag, buffer.getStep(), String.format("%.2f", ((double) duration / (1000 * 60))), nextStep);
             // apply record
-            // TODO
-            record = new Record();
-            // record = updateMaxIdByCustomStepAndGetLeafAlloc(tag, nextStep);
+            record = segmentManager.updateMaxIdByCustomStepAndGetLeafAlloc(tag, nextStep);
             buffer.setUpdateTimestamp(System.currentTimeMillis());
             buffer.setStep(nextStep);
             buffer.setMinStep(record.getStep());
