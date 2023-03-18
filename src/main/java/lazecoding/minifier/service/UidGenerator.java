@@ -1,8 +1,12 @@
 package lazecoding.minifier.service;
 
 import lazecoding.minifier.constant.CacheConstant;
+import lazecoding.minifier.constant.SegmentConstant;
 import lazecoding.minifier.util.BeanUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -11,6 +15,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author lazecoding
  */
 public class UidGenerator {
+
+    private static final Logger logger = LoggerFactory.getLogger(UidGenerator.class);
 
     /**
      * 本地 Uid
@@ -24,21 +30,39 @@ public class UidGenerator {
      */
     public static long getUid() {
         // TODO 获取分布式 Id
-        return getRedisUid();
+        return getSegmentUid();
+    }
+
+    /**
+     * 获取 SegmentUid
+     *
+     * @return
+     */
+    private static long getSegmentUid() {
+        long uid = 0L;
+        try {
+            uid = BufferHolder.getId(SegmentConstant.SHORT_ID_TAG);
+        } catch (Exception e) {
+            logger.error("BufferHolder.getId for UidGenerator Exception", e);
+            throw new RuntimeException(e);
+        }
+        return uid;
+
     }
 
     /**
      * 本地
+     *
      * @return
      */
-    public static long getLocalUid() {
+    private static long getLocalUid() {
         return localUid.incrementAndGet();
     }
 
     /**
      * Redis 生成
      */
-    public static long getRedisUid() {
+    private static long getRedisUid() {
         RedisTemplate redisTemplate = BeanUtil.getBean("redisTemplate", RedisTemplate.class);
         Long num = redisTemplate.opsForValue().increment(CacheConstant.REDIS_UID.getName());
         return num == null ? 0L : num;
