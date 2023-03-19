@@ -1,11 +1,15 @@
 package lazecoding.minifier.controller;
 
 import lazecoding.minifier.constant.DigitConstant;
+import lazecoding.minifier.exception.IllegalUrlException;
 import lazecoding.minifier.exception.NilParamException;
 import lazecoding.minifier.model.BatchRequest;
+import lazecoding.minifier.model.ResultBean;
 import lazecoding.minifier.model.TransformBean;
 import lazecoding.minifier.service.Transform;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -15,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -30,6 +33,8 @@ import static java.util.stream.Collectors.toList;
 @RequestMapping("transform")
 public class TransformController {
 
+    private static final Logger logger = LoggerFactory.getLogger(TransformController.class);
+
     @Autowired
     private Transform transform;
 
@@ -38,13 +43,34 @@ public class TransformController {
      */
     @PostMapping(path = "get")
     @ResponseBody
-    public Mono<TransformBean> transform(String path, Long timeout) {
-        if (timeout == null) {
+    public ResultBean transform(String path, Long timeout) {
+        ResultBean resultBean = ResultBean.getInstance();
+        if (timeout == null || timeout == 0L) {
             // 如果 timeout == null，默认超时时长 1 个月
             timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
         }
-        TransformBean transformBean = transform.getTransformedUrl(path, timeout);
-        return Mono.just(transformBean);
+        boolean isSuccess = false;
+        String message = "";
+        try {
+            TransformBean transformBean = transform.getTransformedUrl(path, timeout);
+            resultBean.setValue(transformBean);
+            isSuccess = true;
+        } catch (NilParamException e) {
+            isSuccess = false;
+            message = e.getMessage();
+            logger.error(message, e);
+        } catch (IllegalUrlException e) {
+            isSuccess = false;
+            message = "系统异常";
+            logger.error(message, e);
+        } catch (Exception e) {
+            isSuccess = false;
+            message = "系统异常";
+            logger.error(message, e);
+        }
+        resultBean.setSuccess(isSuccess);
+        resultBean.setMessage(message);
+        return resultBean;
     }
 
     /**
@@ -52,19 +78,40 @@ public class TransformController {
      */
     @PostMapping(path = "batch")
     @ResponseBody
-    public Flux<TransformBean> batch(@RequestBody BatchRequest batchRequest) {
-        if (ObjectUtils.isEmpty(batchRequest)){
+    public ResultBean batch(@RequestBody BatchRequest batchRequest) {
+        if (ObjectUtils.isEmpty(batchRequest)) {
             throw new NilParamException("BatchRequest Is Nil.");
         }
         Long timeout = batchRequest.getTimeout();
         List<String> list = batchRequest.getList();
-        if (timeout == null) {
+        if (timeout == null || timeout == 0L) {
             // 如果 timeout == null，默认超时时长 1 个月
             timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
         }
-        list = list.stream().filter(StringUtils::isNotBlank).collect(toList());
-        List<TransformBean> transformBeanList = transform.batchTransformedUrl(list, timeout);
-        return Flux.fromIterable(transformBeanList);
+        ResultBean resultBean = ResultBean.getInstance();
+        boolean isSuccess = false;
+        String message = "";
+        try {
+            list = list.stream().filter(StringUtils::isNotBlank).collect(toList());
+            List<TransformBean> transformBeanList = transform.batchTransformedUrl(list, timeout);
+            resultBean.setValue(transformBeanList);
+            isSuccess = true;
+        } catch (NilParamException e) {
+            isSuccess = false;
+            message = e.getMessage();
+            logger.error(message, e);
+        } catch (IllegalUrlException e) {
+            isSuccess = false;
+            message = "系统异常";
+            logger.error(message, e);
+        } catch (Exception e) {
+            isSuccess = false;
+            message = "系统异常";
+            logger.error(message, e);
+        }
+        resultBean.setSuccess(isSuccess);
+        resultBean.setMessage(message);
+        return resultBean;
     }
 
     /**
@@ -78,7 +125,7 @@ public class TransformController {
         }
         Long timeout = batchRequest.getTimeout();
         List<String> list = batchRequest.getList();
-        if (timeout == null) {
+        if (timeout == null || timeout == 0L) {
             // 如果 timeout == null，默认超时时长 1 个月
             timeout = DigitConstant.TIMESTAMP_ONE_MONTH;
         }
