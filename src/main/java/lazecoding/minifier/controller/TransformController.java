@@ -61,7 +61,7 @@ public class TransformController {
             logger.error(message, e);
         } catch (IllegalUrlException e) {
             isSuccess = false;
-            message = "系统异常";
+            message = e.getMessage();
             logger.error(message, e);
         } catch (Exception e) {
             isSuccess = false;
@@ -102,7 +102,7 @@ public class TransformController {
             logger.error(message, e);
         } catch (IllegalUrlException e) {
             isSuccess = false;
-            message = "系统异常";
+            message = e.getMessage();
             logger.error(message, e);
         } catch (Exception e) {
             isSuccess = false;
