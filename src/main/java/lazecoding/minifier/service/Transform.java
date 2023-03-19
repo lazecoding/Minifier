@@ -2,6 +2,7 @@ package lazecoding.minifier.service;
 
 import lazecoding.minifier.config.ServerConfig;
 import lazecoding.minifier.constant.CharConstant;
+import lazecoding.minifier.exception.IllegalUrlException;
 import lazecoding.minifier.exception.NilParamException;
 import lazecoding.minifier.model.TransformBean;
 import lazecoding.minifier.util.ConversionUtils;
@@ -38,6 +39,12 @@ public class Transform {
     private String transformUrl(String fullUrl, Long timeout) {
         if (StringUtils.isBlank(fullUrl)) {
             throw new NilParamException("原地址不得为空");
+        }
+        // 校验协议
+        fullUrl = fullUrl.trim();
+        if (!fullUrl.startsWith(CharConstant.HTTP)
+                && !fullUrl.startsWith(CharConstant.HTTPS)) {
+            throw new IllegalUrlException();
         }
         // 1.申请 id
         long uid = UidGenerator.getUid();

@@ -22,4 +22,14 @@ public class CharConstant {
      */
     public static String URL_ENCODE_CHARSET = "UTF-8";
 
+    /**
+     * http://
+     */
+    public static String HTTP = "http://";
+
+    /**
+     * https://
+     */
+    public static String HTTPS = "https://";
+
 }
