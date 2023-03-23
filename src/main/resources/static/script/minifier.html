@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Minifier</title>
+</head>
+<script type="text/javascript">
+
+    let domain = 'http://127.0.0.1:8849';
+
+    function getShort() {
+        var longLink = document.getElementById('longLink').value;
+        var url = domain + "/transform/get?path=" + longLink;
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function (e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var obj = eval("(" + xhr.responseText + ")");
+                    if (obj.success) {
+                        document.getElementById('shortLinkA').text = obj.value.shortUrl;
+                        document.getElementById('shortLinkA').href = obj.value.shortUrl;
+                    } else {
+                        document.getElementById('shortLinkA').href = '';
+                        document.getElementById('shortLinkA').text = obj.message;
+                    }
+                } else {
+                    console.error(xhr.statusText);
+                }
+            }
+        };
+        xhr.onerror = function (e) {
+            console.error(xhr.statusText);
+        };
+        xhr.send();
+    }
+</script>
+
+<body>
+<form onsubmit="return false">
+    待转换地址:<br>
+    <input type="text" style="width: 400px;" id="longLink" value="https://graph.baidu.com/pcpage/index?tpl_from=pc"></input>
+    <button onclick="getShort();">提交转换请求</button><br>
+    转换结果: <a id="shortLinkA" target="_blank">......</a><br>
+</form>
+</body>
+
+</html>
