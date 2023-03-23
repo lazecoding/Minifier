@@ -13,6 +13,8 @@ CREATE TABLE `segment_record`
     UNIQUE INDEX idx_tag (`bus_tag`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+INSERT INTO segment_record (bus_tag, max_id, step, description) VALUES ('minifier_url_id_tag', 1, 20000, 'SegmentUid');
+
 -- url_map_*
 DROP TABLE IF EXISTS `url_map_0`;
 
