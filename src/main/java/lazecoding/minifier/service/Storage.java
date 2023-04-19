@@ -64,33 +64,32 @@ public class Storage {
         if (StringUtils.isBlank(conversionCode)) {
             throw new NilParamException("Code 不得为空");
         }
-        String fullUrl;
+        String fullUrl = "";
         String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
         // 本地缓存
         CacheBean<String> transformCache = (CacheBean<String>) caffeineCache.getIfPresent(cacheKey);
-        // 如果缓存不存在 或者 超出了 ttl
-        if (transformCache == null || LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() > transformCache.ttl) {
+        // 如果缓存不存在
+        if (ObjectUtils.isEmpty(transformCache)) {
             // 分布式缓存
             transformCache = (CacheBean<String>) redisTemplate.opsForValue().get(cacheKey);
             if (ObjectUtils.isEmpty(transformCache)) {
-                fullUrl = "";
                 //  Find From DB
                 String tableName = TableConstant.getUrlMapTable(conversionCode);
                 UrlMapBean urlMap = urlMapMapper.findUrlMap(conversionCode, tableName);
-                if (urlMap == null || LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() > urlMap.getTtl()) {
-                    // null 缓存 5 分钟
+                if (urlMap == null) {
+                    // null 也要设置缓存
                     transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusMinutes(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
                 } else {
                     transformCache = new CacheBean<>(urlMap.getFullUrl(), urlMap.getTtl());
-                    // Redis
-                    redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
                 }
-            } else {
-                fullUrl = transformCache.t;
+                // Redis
+                redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
             }
             // Local Must Do.
             caffeineCache.put(cacheKey, transformCache);
-        } else {
+        }
+        // transformCache 不可能为空了
+        if (!ObjectUtils.isEmpty(transformCache) && LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() < transformCache.ttl) {
             fullUrl = transformCache.t;
         }
         return fullUrl;
