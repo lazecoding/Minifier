@@ -48,6 +48,14 @@ mybatis:
     map-underscore-to-camel-case: true
 
 project:
+  # 本地缓存
+  caffeine:
+    # 初始容量
+    initialCapacity: 999
+    # 最大容量
+    maximumSize: 9999
+    # 上次读写超过一定时间后过期,单位 / s
+    expireAfterAccessNanos: 6666
   server-config:
     # 服务域名，不要 / 结尾，形如: http://wwww.minifier.cn，http://localhost:8849
     domain: http://localhost:8849
