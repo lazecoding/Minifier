@@ -7,11 +7,10 @@
 </head>
 <script type="text/javascript">
 
-    let domain = 'http://127.0.0.1:8849';
-
     function getShort() {
         var longLink = document.getElementById('longLink').value;
-        var url = domain + "/transform/get?path=" + longLink;
+        var ttl = document.getElementById('ttl').value;
+        var url = "http://127.0.0.1:8849/transform/get?path=" + longLink + "&timeout=" + ttl;
         var xhr = new XMLHttpRequest();
         xhr.open("POST", url, true);
         xhr.setRequestHeader("Content-Type", "application/json");
@@ -39,12 +38,16 @@
 </script>
 
 <body>
-<form onsubmit="return false">
-    待转换地址:<br>
-    <input type="text" style="width: 400px;" id="longLink" value="https://graph.baidu.com/pcpage/index?tpl_from=pc"></input>
-    <button onclick="getShort();">提交转换请求</button><br>
-    转换结果: <a id="shortLinkA" target="_blank">......</a><br>
-</form>
+    <form onsubmit="return false">
+        跳转地址:<input type="text" style="width: 400px;" id="longLink"
+            value="https://graph.baidu.com/pcpage/index?tpl_from=pc"></input>
+        <br>
+        有效时长:<input type="number" style="width: 80px;" id="ttl"
+            value="600000" ></input>ms  
+        <br>    
+        <button onclick="getShort();">提交短链请求</button><br>
+        生成短链: <a id="shortLinkA" target="_blank" >......</a><br>
+    </form>
 </body>
 
 </html>
