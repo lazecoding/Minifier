@@ -1,5 +1,6 @@
 package lazecoding.minifier.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,7 +8,9 @@ import java.util.Date;
  *
  * @author lazecoding
  */
-public class UrlMapBean {
+public class UrlMapBean implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 短码

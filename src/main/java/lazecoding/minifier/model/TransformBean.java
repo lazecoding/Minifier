@@ -1,11 +1,16 @@
 package lazecoding.minifier.model;
 
+import java.io.Serializable;
+
 /**
  * 转换映射 Bean
  *
  * @author lazecoding
  */
-public class TransformBean {
+public class TransformBean implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     /**
      * 全地址
      */

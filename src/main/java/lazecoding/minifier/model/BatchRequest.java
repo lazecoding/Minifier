@@ -1,5 +1,6 @@
 package lazecoding.minifier.model;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -8,7 +9,9 @@ import java.util.List;
  *
  * @author lazecoding
  */
-public class BatchRequest {
+public class BatchRequest implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 待转换的原地址

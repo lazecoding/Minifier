@@ -1,11 +1,15 @@
 package lazecoding.minifier.model;
 
+import java.io.Serializable;
+
 /**
  * 缓存实体
  *
  * @author lazecoding
  */
-public class CacheBean<T> {
+public class CacheBean<T> implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     /**
      * 缓存对象
