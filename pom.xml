@@ -15,7 +15,7 @@
     <description>Minifier</description>
     <properties>
         <java.version>11</java.version>
-        <caffeine.version>2.7.0</caffeine.version>
+        <caffeine.version>3.1.5</caffeine.version>
         <mysql-connector-java.version>5.1.49</mysql-connector-java.version>
         <mybatis.version>2.2.2</mybatis.version>
     </properties>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>${mysql-connector-java.version}</version>
+            <!--<version>${mysql-connector-java.version}</version>-->
         </dependency>
 
         <!--Mybatis-->
