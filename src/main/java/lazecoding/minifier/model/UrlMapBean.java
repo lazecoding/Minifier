@@ -32,6 +32,15 @@ public class UrlMapBean implements Serializable {
      */
     private Date createTime;
 
+    public UrlMapBean() {
+    }
+
+    public UrlMapBean(String conversionCode, String fullUrl, long ttl) {
+        this.conversionCode = conversionCode;
+        this.fullUrl = fullUrl;
+        this.ttl = ttl;
+    }
+
     public String getConversionCode() {
         return conversionCode;
     }

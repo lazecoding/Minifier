@@ -6,7 +6,6 @@ import lazecoding.minifier.constant.CharConstant;
 import lazecoding.minifier.constant.TableConstant;
 import lazecoding.minifier.exception.NilParamException;
 import lazecoding.minifier.mapper.UrlMapMapper;
-import lazecoding.minifier.model.CacheBean;
 import lazecoding.minifier.model.UrlMapBean;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -16,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,17 +42,18 @@ public class Storage {
      * @param fullUrl        全地址
      */
     public void storageTransformInfo(String conversionCode, String fullUrl, long ttl) {
-        // cachekey[minifier:transform:link:conversionCode],cacheValue[transformCache]
+        // cachekey[minifier:transform:entity:conversionCode],cacheValue[transformCache]
         String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
-        CacheBean<String> transformCache = new CacheBean<>(fullUrl, ttl);
         // DB > Redis > Local
         // 1.DB
         String tableName = TableConstant.getUrlMapTable(conversionCode);
         urlMapMapper.addUrlMap(conversionCode, fullUrl, ttl, tableName);
+        UrlMapBean urlMapBean = new UrlMapBean(conversionCode, fullUrl, ttl);
+        urlMapBean.setCreateTime(Date.from(LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET))));
         // 2.Redis
-        redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(cacheKey, urlMapBean, 60L, TimeUnit.MINUTES);
         // 3.Local
-        caffeineCache.put(cacheKey, transformCache);
+        caffeineCache.put(cacheKey, urlMapBean);
     }
 
     /**
@@ -67,32 +68,32 @@ public class Storage {
         String fullUrl = "";
         String cacheKey = CacheConstant.TRANSFORM_HEAD.getName() + conversionCode;
         // 本地缓存
-        CacheBean<String> transformCache = (CacheBean<String>) caffeineCache.getIfPresent(cacheKey);
-        // 如果缓存不存在
-        if (ObjectUtils.isEmpty(transformCache)) {
-            // 分布式缓存
-            transformCache = (CacheBean<String>) redisTemplate.opsForValue().get(cacheKey);
-            if (ObjectUtils.isEmpty(transformCache)) {
+        UrlMapBean urlMapBean = (UrlMapBean) caffeineCache.getIfPresent(cacheKey);
+        // 本地缓存不存在
+        if (ObjectUtils.isEmpty(urlMapBean)) {
+            // 查询分布式缓存
+            urlMapBean = (UrlMapBean) redisTemplate.opsForValue().get(cacheKey);
+            if (ObjectUtils.isEmpty(urlMapBean)) {
                 //  Find From DB
                 String tableName = TableConstant.getUrlMapTable(conversionCode);
-                UrlMapBean urlMap = urlMapMapper.findUrlMap(conversionCode, tableName);
-                if (urlMap == null) {
+                urlMapBean = urlMapMapper.findUrlMap(conversionCode, tableName);
+                if (ObjectUtils.isEmpty(urlMapBean)) {
                     // null 也要设置缓存
-                    transformCache = new CacheBean<>(fullUrl, LocalDateTime.now().plusMinutes(5).toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli());
-                } else {
-                    transformCache = new CacheBean<>(urlMap.getFullUrl(), urlMap.getTtl());
+                    urlMapBean = new UrlMapBean();
                 }
-                // Redis
-                redisTemplate.opsForValue().set(cacheKey, transformCache, 60L, TimeUnit.MINUTES);
+                // 设置分布式缓存
+                redisTemplate.opsForValue().set(cacheKey, urlMapBean, 60L, TimeUnit.MINUTES);
             }
             // Local Must Do.
-            caffeineCache.put(cacheKey, transformCache);
+            caffeineCache.put(cacheKey, urlMapBean);
         }
+
         // transformCache 不可能为空了
-        if (!ObjectUtils.isEmpty(transformCache) && LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() < transformCache.ttl) {
-            fullUrl = transformCache.t;
+        if (!ObjectUtils.isEmpty(urlMapBean) && LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET)).toEpochMilli() < urlMapBean.getTtl()) {
+            fullUrl = urlMapBean.getFullUrl();
         }
         return fullUrl;
     }
+
 
 }
