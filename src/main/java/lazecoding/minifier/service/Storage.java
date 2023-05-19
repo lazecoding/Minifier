@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 存储模块
@@ -51,7 +50,7 @@ public class Storage {
         UrlMapBean urlMapBean = new UrlMapBean(conversionCode, fullUrl, ttl);
         urlMapBean.setCreateTime(Date.from(LocalDateTime.now().toInstant(ZoneOffset.of(CharConstant.ZONE_OFFSET))));
         // 2.Redis
-        redisTemplate.opsForValue().set(cacheKey, urlMapBean, 60L, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(cacheKey, urlMapBean, CacheConstant.TRANSFORM_HEAD.getTtl(), CacheConstant.TRANSFORM_HEAD.getTimeUnit());
         // 3.Local
         caffeineCache.put(cacheKey, urlMapBean);
     }
@@ -82,7 +81,7 @@ public class Storage {
                     urlMapBean = new UrlMapBean();
                 }
                 // 设置分布式缓存
-                redisTemplate.opsForValue().set(cacheKey, urlMapBean, 60L, TimeUnit.MINUTES);
+                redisTemplate.opsForValue().set(cacheKey, urlMapBean, CacheConstant.TRANSFORM_HEAD.getTtl(), CacheConstant.TRANSFORM_HEAD.getTimeUnit());
             }
             // Local Must Do.
             caffeineCache.put(cacheKey, urlMapBean);
